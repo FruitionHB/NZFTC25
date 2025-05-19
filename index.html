@@ -58,7 +58,7 @@
         }
         var map = L.map('map', {
             zoomControl:false, maxZoom:28, minZoom:1
-        }).fitBounds([[-41.202009056185574,172.8032998580607],[-41.03151259058496,173.19205838596915]]);
+        }).fitBounds([[-41.18085408406495,172.82946896171867],[-41.05116693098396,173.14837941207705]]);
         var hash = new L.Hash(map);
         map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
@@ -690,7 +690,7 @@
                 feature: layer.feature,
                 variables: {}
             };
-            layer.bindTooltip((exp_label_PiqaBoo_2_eval_expression(context) !== null?String('<div style="color: #ff0000; font-size: 15pt; font-family: \'Liberation Sans\', sans-serif;">' + exp_label_PiqaBoo_2_eval_expression(context)) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_PiqaBoo_2'});
+            layer.bindTooltip((layer.feature.properties['Block_name'] !== null?String('<div style="color: #ff0000; font-size: 10pt; font-family: \'Liberation Sans\', sans-serif;">' + layer.feature.properties['Block_name']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_PiqaBoo_2'});
             labels.push(layer);
             totalMarkers += 1;
               layer.added = true;
