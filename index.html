@@ -36,7 +36,7 @@
         <script src="js/labelgun.min.js"></script>
         <script src="js/labels.js"></script>
         <script src="data/SunriseMagic_1.js"></script>
-        <script src="data/PiqaBoo_2.js"></script>
+        <script src="data/PiqaRed_2.js"></script>
         <script src="data/Eureka_3.js"></script>
         <script src="data/CosmicCrisp_4.js"></script>
         <script>
@@ -58,7 +58,7 @@
         }
         var map = L.map('map', {
             zoomControl:false, maxZoom:28, minZoom:1
-        }).fitBounds([[-41.18085408406495,172.82946896171867],[-41.05116693098396,173.14837941207705]]);
+        }).fitBounds([[-39.64140540047178,176.74763533235304],[-39.572438215780586,176.88236170663973]]);
         var hash = new L.Hash(map);
         map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
@@ -244,7 +244,7 @@
         });
         bounds_group.addLayer(layer_SunriseMagic_1);
         map.addLayer(layer_SunriseMagic_1);
-        function pop_PiqaBoo_2(feature, layer) {
+        function pop_PiqaRed_2(feature, layer) {
             layer.on({
                 mouseout: function(e) {
                     for (var i in e.target._eventParents) {
@@ -339,9 +339,9 @@
 			layer.bindPopup(content, { maxHeight: 400 });
         }
 
-        function style_PiqaBoo_2_0() {
+        function style_PiqaRed_2_0() {
             return {
-                pane: 'pane_PiqaBoo_2',
+                pane: 'pane_PiqaRed_2',
                 opacity: 1,
                 color: 'rgba(35,35,35,1.0)',
                 dashArray: '',
@@ -354,20 +354,20 @@
                 interactive: true,
             }
         }
-        map.createPane('pane_PiqaBoo_2');
-        map.getPane('pane_PiqaBoo_2').style.zIndex = 402;
-        map.getPane('pane_PiqaBoo_2').style['mix-blend-mode'] = 'normal';
-        var layer_PiqaBoo_2 = new L.geoJson(json_PiqaBoo_2, {
+        map.createPane('pane_PiqaRed_2');
+        map.getPane('pane_PiqaRed_2').style.zIndex = 402;
+        map.getPane('pane_PiqaRed_2').style['mix-blend-mode'] = 'normal';
+        var layer_PiqaRed_2 = new L.geoJson(json_PiqaRed_2, {
             attribution: '',
             interactive: true,
-            dataVar: 'json_PiqaBoo_2',
-            layerName: 'layer_PiqaBoo_2',
-            pane: 'pane_PiqaBoo_2',
-            onEachFeature: pop_PiqaBoo_2,
-            style: style_PiqaBoo_2_0,
+            dataVar: 'json_PiqaRed_2',
+            layerName: 'layer_PiqaRed_2',
+            pane: 'pane_PiqaRed_2',
+            onEachFeature: pop_PiqaRed_2,
+            style: style_PiqaRed_2_0,
         });
-        bounds_group.addLayer(layer_PiqaBoo_2);
-        map.addLayer(layer_PiqaBoo_2);
+        bounds_group.addLayer(layer_PiqaRed_2);
+        map.addLayer(layer_PiqaRed_2);
         function pop_Eureka_3(feature, layer) {
             layer.on({
                 mouseout: function(e) {
@@ -607,7 +607,7 @@
         var overlaysTree = [
             {label: '<img src="legend/CosmicCrisp_4.png" /> Cosmic Crisp', layer: layer_CosmicCrisp_4},
             {label: '<img src="legend/Eureka_3.png" /> Eureka', layer: layer_Eureka_3},
-            {label: '<img src="legend/PiqaBoo_2.png" /> Piqa Boo', layer: layer_PiqaBoo_2},
+            {label: '<img src="legend/PiqaRed_2.png" /> Piqa Red', layer: layer_PiqaRed_2},
             {label: '<img src="legend/SunriseMagic_1.png" /> Sunrise Magic', layer: layer_SunriseMagic_1},
             {label: "Google Hybrid", layer: layer_GoogleHybrid_0},]
         var lay = L.control.layers.tree(null, overlaysTree,{
@@ -685,12 +685,12 @@
               i++;
         });
         var i = 0;
-        layer_PiqaBoo_2.eachLayer(function(layer) {
+        layer_PiqaRed_2.eachLayer(function(layer) {
             var context = {
                 feature: layer.feature,
                 variables: {}
             };
-            layer.bindTooltip((layer.feature.properties['Block_name'] !== null?String('<div style="color: #ff0000; font-size: 10pt; font-family: \'Liberation Sans\', sans-serif;">' + layer.feature.properties['Block_name']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_PiqaBoo_2'});
+            layer.bindTooltip((layer.feature.properties['Block_name'] !== null?String('<div style="color: #ff0000; font-size: 10pt; font-family: \'Liberation Sans\', sans-serif;">' + layer.feature.properties['Block_name']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_PiqaRed_2'});
             labels.push(layer);
             totalMarkers += 1;
               layer.added = true;
@@ -723,15 +723,15 @@
               addLabel(layer, i);
               i++;
         });
-        resetLabels([layer_SunriseMagic_1,layer_PiqaBoo_2,layer_Eureka_3,layer_CosmicCrisp_4]);
+        resetLabels([layer_SunriseMagic_1,layer_PiqaRed_2,layer_Eureka_3,layer_CosmicCrisp_4]);
         map.on("zoomend", function(){
-            resetLabels([layer_SunriseMagic_1,layer_PiqaBoo_2,layer_Eureka_3,layer_CosmicCrisp_4]);
+            resetLabels([layer_SunriseMagic_1,layer_PiqaRed_2,layer_Eureka_3,layer_CosmicCrisp_4]);
         });
         map.on("layeradd", function(){
-            resetLabels([layer_SunriseMagic_1,layer_PiqaBoo_2,layer_Eureka_3,layer_CosmicCrisp_4]);
+            resetLabels([layer_SunriseMagic_1,layer_PiqaRed_2,layer_Eureka_3,layer_CosmicCrisp_4]);
         });
         map.on("layerremove", function(){
-            resetLabels([layer_SunriseMagic_1,layer_PiqaBoo_2,layer_Eureka_3,layer_CosmicCrisp_4]);
+            resetLabels([layer_SunriseMagic_1,layer_PiqaRed_2,layer_Eureka_3,layer_CosmicCrisp_4]);
         });
         </script>
     </body>
