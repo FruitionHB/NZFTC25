@@ -770,6 +770,19 @@ function exp_label_SunriseMagic_1_eval_expression(context) {
 }
 
 
+function exp_label_PiqaRed_2_eval_expression(context) {
+    // Grower || '\n' || Block_name
+
+    var feature = context.feature;
+    
+    if (feature.properties) {
+        return ((feature.properties['Grower']  + '\n') + feature.properties['Block_name'] );
+    } else {
+        return ((feature['Grower']  + '\n') + feature['Block_name'] );
+    }
+}
+
+
 function exp_label_Eureka_3_eval_expression(context) {
     // Grower || '\n' || Block_name
 
