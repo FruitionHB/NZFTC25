@@ -38,6 +38,7 @@
         .leaflet-popup-content.media{
             width: auto!important;
             height: auto!important;
+            overflow: auto;
         }
         .leaflet-popup-content th {
             text-align: left;
@@ -59,7 +60,6 @@
         }
         .leaflet-tooltip-left:before, .leaflet-tooltip-right:before {
             border: 0px;
-        }
         }
         .fa, .leaflet-container, a {
             color: #444444 !important;
@@ -194,7 +194,12 @@
             justify-content: center;
             align-items: center;
         }
+        .leaflet-marker-icon{
+            white-space: nowrap;
+        }
+        
         .css_PiqaRed_2 {
+            pointer-events: none!important;
             text-shadow: -2px -2px 0 #ffffff,
                 -2px -1px 0 #ffffff,
                 -2px 0px 0 #ffffff,
