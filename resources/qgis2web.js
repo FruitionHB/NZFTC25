@@ -4,12 +4,38 @@ var map = new ol.Map({
     renderer: 'canvas',
     layers: layersList,
     view: new ol.View({
-         maxZoom: 28, minZoom: 1
+        constrainResolution: true,
+        maxZoom: 28,
+        minZoom: 1,
+        
     })
 });
 
 //initial view - epsg:3857 coordinates if not "Match project CRS"
-map.getView().fit([19672166.605264, -4822331.136673, 19702483.522462, -4804450.810978], map.getSize());
+map.getView().fit([19678946.136147, -4815248.505662, 19701165.091628, -4801210.900643], map.getSize());
+
+//change cursor
+function pointerOnFeature(evt) {
+    if (evt.dragging) {
+        return;
+    }
+    var hasFeature = map.hasFeatureAtPixel(evt.pixel, {
+        layerFilter: function(layer) {
+            return layer && (layer.get("interactive"));
+        }
+    });
+    map.getViewport().style.cursor = hasFeature ? "pointer" : "";
+}
+map.on('pointermove', pointerOnFeature);
+function styleCursorMove() {
+    map.on('pointerdrag', function() {
+        map.getViewport().style.cursor = "move";
+    });
+    map.on('pointerup', function() {
+        map.getViewport().style.cursor = "default";
+    });
+}
+styleCursorMove();
 
 ////small screen definition
     var hasTouchScreen = map.getViewport().classList.contains('ol-touch');
@@ -63,13 +89,22 @@ var content = document.getElementById('popup-content');
 var closer = document.getElementById('popup-closer');
 var sketch;
 
+function stopMediaInPopup() {
+    var mediaElements = container.querySelectorAll('audio, video');
+    mediaElements.forEach(function(media) {
+        media.pause();
+        media.currentTime = 0;
+    });
+}
 closer.onclick = function() {
     container.style.display = 'none';
     closer.blur();
+    stopMediaInPopup();
     return false;
 };
 var overlayPopup = new ol.Overlay({
-    element: container
+    element: container,
+	autoPan: true
 });
 map.addOverlay(overlayPopup)
     
@@ -112,13 +147,16 @@ var featureOverlay = new ol.layer.Vector({
     updateWhileInteracting: true // optional, for instant visual feedback
 });
 
-var doHighlight = false;
-var doHover = false;
+var doHighlight = true;
+var doHover = true;
 
 function createPopupField(currentFeature, currentFeatureKeys, layer) {
     var popupText = '';
     for (var i = 0; i < currentFeatureKeys.length; i++) {
-        if (currentFeatureKeys[i] != 'geometry') {
+        if (currentFeatureKeys[i] != 'geometry' &&
+            currentFeatureKeys[i] != 'layerObject' &&
+            currentFeatureKeys[i] != 'idO' &&
+            currentFeatureKeys[i] != '_mvtLayer_') {
             var popupField = '';
             if (layer.get('fieldLabels')[currentFeatureKeys[i]] == "hidden field") {
                 continue;
@@ -150,7 +188,9 @@ function createPopupField(currentFeature, currentFeatureKeys, layer) {
 					popupField += (fieldValue != null ? '<img src="images/' + fieldValue.replace(/[\\\/:]/g, '_').trim() + '" /></td>' : '');
 				} else if (/\.(mp4|webm|ogg|avi|mov|flv)$/i.test(fieldValue)) {
 					popupField += (fieldValue != null ? '<video controls><source src="images/' + fieldValue.replace(/[\\\/:]/g, '_').trim() + '" type="video/mp4">Il tuo browser non supporta il tag video.</video></td>' : '');
-				} else {
+				} else if (/\.(mp3|wav|ogg|aac|flac)$/i.test(fieldValue)) {
+                    popupField += (fieldValue != null ? '<audio controls><source src="images/' + fieldValue.replace(/[\\\/:]/g, '_').trim() + '" type="audio/mpeg">Il tuo browser non supporta il tag audio.</audio></td>' : '');
+                } else {
 					popupField += (fieldValue != null ? autolinker.link(fieldValue.toLocaleString()) + '</td>' : '');
 				}
 			}
@@ -175,42 +215,53 @@ function onPointerMove(evt) {
     var clusteredFeatures;
     var clusterLength;
     var popupText = '<ul>';
+
+    // Collect all features and their layers at the pixel
+    var featuresAndLayers = [];
     map.forEachFeatureAtPixel(pixel, function(feature, layer) {
-        if (layer && feature instanceof ol.Feature && (layer.get("interactive") || layer.get("interactive") == undefined)) {
-            var doPopup = false;
-            for (k in layer.get('fieldImages')) {
-                if (layer.get('fieldImages')[k] != "Hidden") {
-                    doPopup = true;
-                }
-            }
-            currentFeature = feature;
-            currentLayer = layer;
-            clusteredFeatures = feature.get("features");
-            if (clusteredFeatures) {
-				clusterLength = clusteredFeatures.length;
-			}
-            if (typeof clusteredFeatures !== "undefined") {
-                if (doPopup) {
-                    for(var n=0; n<clusteredFeatures.length; n++) {
-                        currentFeature = clusteredFeatures[n];
-                        currentFeatureKeys = currentFeature.getKeys();
-                        popupText += '<li><table>'
-                        popupText += '<a>' + '<b>' + layer.get('popuplayertitle') + '</b>' + '</a>';
-                        popupText += createPopupField(currentFeature, currentFeatureKeys, layer);
-                        popupText += '</table></li>';    
-                    }
-                }
-            } else {
-                currentFeatureKeys = currentFeature.getKeys();
-                if (doPopup) {
-                    popupText += '<li><table>';
-                    popupText += '<a>' + '<b>' + layer.get('popuplayertitle') + '</b>' + '</a>';
-                    popupText += createPopupField(currentFeature, currentFeatureKeys, layer);
-                    popupText += '</table></li>';
-                }
-            }
+        if (layer && feature instanceof ol.Feature && (layer.get("interactive") || layer.get("interactive") === undefined)) {
+            featuresAndLayers.push({ feature, layer });
         }
     });
+
+    // Iterate over the features and layers in reverse order
+    for (var i = featuresAndLayers.length - 1; i >= 0; i--) {
+        var feature = featuresAndLayers[i].feature;
+        var layer = featuresAndLayers[i].layer;
+        var doPopup = false;
+        for (k in layer.get('fieldImages')) {
+            if (layer.get('fieldImages')[k] != "Hidden") {
+                doPopup = true;
+            }
+        }
+        currentFeature = feature;
+        currentLayer = layer;
+        clusteredFeatures = feature.get("features");
+        if (clusteredFeatures) {
+            clusterLength = clusteredFeatures.length;
+        }
+        if (typeof clusteredFeatures !== "undefined") {
+            if (doPopup) {
+                for(var n=0; n<clusteredFeatures.length; n++) {
+                    currentFeature = clusteredFeatures[n];
+                    currentFeatureKeys = currentFeature.getKeys();
+                    popupText += '<li><table>'
+                    popupText += '<a>' + '<b>' + layer.get('popuplayertitle') + '</b>' + '</a>';
+                    popupText += createPopupField(currentFeature, currentFeatureKeys, layer);
+                    popupText += '</table></li>';    
+                }
+            }
+        } else {
+            currentFeatureKeys = currentFeature.getKeys();
+            if (doPopup) {
+                popupText += '<li><table>';
+                popupText += '<a>' + '<b>' + layer.get('popuplayertitle') + '</b>' + '</a>';
+                popupText += createPopupField(currentFeature, currentFeatureKeys, layer);
+                popupText += '</table></li>';
+            }
+        }
+    }
+
     if (popupText == '<ul>') {
         popupText = '';
     } else {
@@ -243,7 +294,7 @@ function onPointerMove(evt) {
                     highlightStyle = new ol.style.Style({
                         image: new ol.style.Circle({
                             fill: new ol.style.Fill({
-                                color: "#ffff00"
+                                color: "rgba(255, 255, 0, 1.00)"
                             }),
                             radius: radius
                         })
@@ -254,7 +305,7 @@ function onPointerMove(evt) {
 
                     highlightStyle = new ol.style.Style({
                         stroke: new ol.style.Stroke({
-                            color: '#ffff00',
+                            color: 'rgba(255, 255, 0, 1.00)',
                             lineDash: null,
                             width: featureWidth
                         })
@@ -263,7 +314,7 @@ function onPointerMove(evt) {
                 } else {
                     highlightStyle = new ol.style.Style({
                         fill: new ol.style.Fill({
-                            color: '#ffff00'
+                            color: 'rgba(255, 255, 0, 1.00)'
                         })
                     })
                 }
@@ -276,9 +327,9 @@ function onPointerMove(evt) {
 
     if (doHover) {
         if (popupText) {
+			content.innerHTML = popupText;
+            container.style.display = 'block';
             overlayPopup.setPosition(coord);
-            content.innerHTML = popupText;
-            container.style.display = 'block';        
         } else {
             container.style.display = 'none';
             closer.blur();
@@ -294,12 +345,13 @@ var featuresPopupActive = false;
 
 function updatePopup() {
     if (popupContent) {
-        overlayPopup.setPosition(popupCoord);
         content.innerHTML = popupContent;
         container.style.display = 'block';
+		overlayPopup.setPosition(popupCoord);
     } else {
         container.style.display = 'none';
         closer.blur();
+        stopMediaInPopup();
     }
 } 
 
@@ -364,9 +416,9 @@ function onSingleClickWMS(evt) {
     if (doHover || sketch) {
         return;
     }
-	if (!featuresPopupActive) {
-		popupContent = '';
-	}
+    if (!featuresPopupActive) {
+        popupContent = '';
+    }
     var coord = evt.coordinate;
     var viewProjection = map.getView().getProjection();
     var viewResolution = map.getView().getResolution();
@@ -377,12 +429,12 @@ function onSingleClickWMS(evt) {
                 evt.coordinate, viewResolution, viewProjection, {
                     'INFO_FORMAT': 'text/html',
                 });
-            if (url) {				
-                const wmsTitle = wms_layers[i][0].get('popuplayertitle');					
-                var ldsRoller = '<div id="lds-roller"><img class="lds-roller-img" style="height: 25px; width: 25px;"></img></div>';
-				
+            if (url) {
+                const wmsTitle = wms_layers[i][0].get('popuplayertitle');
+                var ldsRoller = '<div class="roller-switcher" style="height: 25px; width: 25px;"></div>';
+
                 popupCoord = coord;
-				popupContent += ldsRoller;
+                popupContent += ldsRoller;
                 updatePopup();
 
                 var timeoutPromise = new Promise((resolve, reject) => {
@@ -391,30 +443,44 @@ function onSingleClickWMS(evt) {
                     }, 5000); // (5 second)
                 });
 
-                Promise.race([
-                    fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url)),
-                    timeoutPromise
-                ])
-                .then((response) => {
-                    if (response.ok) {
-                        return response.text();
+                // Function to try fetch with different option
+                function tryFetch(urls) {
+                    if (urls.length === 0) {
+                        return Promise.reject(new Error('All fetch attempts failed'));
                     }
-                })
-                .then((html) => {
-                    if (html.indexOf('<table') !== -1) {
-                        popupContent += '<a><b>' + wmsTitle + '</b></a>';
-                        popupContent += html + '<p></p>';
-                        updatePopup();
-                    }
-                })
-                // .catch((error) => {
-				// })
-                .finally(() => {
-                    setTimeout(() => {
-                        var loaderIcon = document.querySelector('#lds-roller');
-						loaderIcon.remove();
-                    }, 500); // (0.5 second)	
-                });
+                    return fetch(urls[0])
+                        .then((response) => {
+                            if (response.ok) {
+                                return response.text();
+                            } else {
+                                throw new Error('Fetch failed');
+                            }
+                        })
+                        .catch(() => tryFetch(urls.slice(1))); // Try next URL
+                }
+
+                // List of URLs to try
+                // The first URL is the original, the second is the encoded version, and the third is the proxy
+                const urlsToTry = [
+                    url,
+                    encodeURIComponent(url),
+                    'https://api.allorigins.win/raw?url=' + encodeURIComponent(url)
+                ];
+
+                Promise.race([tryFetch(urlsToTry), timeoutPromise])
+                    .then((html) => {
+                        if (html.indexOf('<table') !== -1) {
+                            popupContent += '<a><b>' + wmsTitle + '</b></a>';
+                            popupContent += html + '<p></p>';
+                            updatePopup();
+                        }
+                    })
+                    .finally(() => {
+                        setTimeout(() => {
+                            var loaderIcon = document.querySelector('.roller-switcher');
+                            if (loaderIcon) loaderIcon.remove();
+                        }, 500); // (0.5 second)
+                    });
             }
         }
     }
@@ -426,6 +492,7 @@ map.on('singleclick', onSingleClickWMS);
 //get container
 var topLeftContainerDiv = document.getElementById('top-left-container')
 var bottomLeftContainerDiv = document.getElementById('bottom-left-container')
+var topRightContainerDiv = document.getElementById('top-right-container')
 var bottomRightContainerDiv = document.getElementById('bottom-right-container')
 
 //title
@@ -434,7 +501,7 @@ var Title = new ol.control.Control({
     element: (() => {
         var titleElement = document.createElement('div');
         titleElement.className = 'top-left-title ol-control';
-        titleElement.innerHTML = '<h2 class="project-title">NZ Fruit Tree Co 2025</h2>';
+        titleElement.innerHTML = '<h2 class="project-title">NZ Fruit Tree Co 2026</h2>';
         return titleElement;
     })(),
     target: 'top-left-container'
@@ -446,76 +513,6 @@ map.addControl(Title)
 
 //geolocate
 
-isTracking = false;
-var geolocateControl = (function (Control) {
-    geolocateControl = function(opt_options) {
-        var options = opt_options || {};
-        var button = document.createElement('button');
-        button.className += ' fa fa-map-marker';
-        var handleGeolocate = function() {
-            if (isTracking) {
-                map.removeLayer(geolocateOverlay);
-                isTracking = false;
-          } else if (geolocation.getTracking()) {
-                map.addLayer(geolocateOverlay);
-                map.getView().setCenter(geolocation.getPosition());
-                isTracking = true;
-          }
-        };
-        button.addEventListener('click', handleGeolocate, false);
-        button.addEventListener('touchstart', handleGeolocate, false);
-        var element = document.createElement('div');
-        element.className = 'geolocate ol-unselectable ol-control';
-        element.appendChild(button);
-        ol.control.Control.call(this, {
-            element: element,
-            target: options.target
-        });
-    };
-    if (Control) geolocateControl.__proto__ = Control;
-    geolocateControl.prototype = Object.create(Control && Control.prototype);
-    geolocateControl.prototype.constructor = geolocateControl;
-    return geolocateControl;
-}(ol.control.Control));
-map.addControl(new geolocateControl())
-
-      var geolocation = new ol.Geolocation({
-  projection: map.getView().getProjection()
-});
-
-
-var accuracyFeature = new ol.Feature();
-geolocation.on('change:accuracyGeometry', function() {
-  accuracyFeature.setGeometry(geolocation.getAccuracyGeometry());
-});
-
-var positionFeature = new ol.Feature();
-positionFeature.setStyle(new ol.style.Style({
-  image: new ol.style.Circle({
-    radius: 6,
-    fill: new ol.style.Fill({
-      color: '#3399CC'
-    }),
-    stroke: new ol.style.Stroke({
-      color: '#fff',
-      width: 2
-    })
-  })
-}));
-
-geolocation.on('change:position', function() {
-  var coordinates = geolocation.getPosition();
-  positionFeature.setGeometry(coordinates ?
-      new ol.geom.Point(coordinates) : null);
-});
-
-var geolocateOverlay = new ol.layer.Vector({
-  source: new ol.source.Vector({
-    features: [accuracyFeature, positionFeature]
-  })
-});
-
-geolocation.setTracking(true);
 
 
 //measurement
@@ -565,16 +562,19 @@ var bottomAttribution = new ol.control.Attribution({
 });
 map.addControl(bottomAttribution);
 
-var attributionList = document.createElement('li');
-attributionList.innerHTML = `
-	<a href="https://github.com/qgis2web/qgis2web">qgis2web</a> &middot;
-	<a href="https://openlayers.org/">OpenLayers</a> &middot;
-	<a href="https://qgis.org/">QGIS</a>	
-`;
-var bottomAttributionUl = bottomAttribution.element.querySelector('ul');
-if (bottomAttributionUl) {
-  bottomAttribution.element.insertBefore(attributionList, bottomAttributionUl);
-}
+map.once('rendercomplete', function() {
+  var bottomAttributionUl = bottomAttribution.element.querySelector('ul');
+  if (bottomAttributionUl) {
+    var layerAttrs = Array.from(bottomAttributionUl.querySelectorAll('li'))
+      .map(function(li) { return li.innerHTML.trim(); }).filter(Boolean);
+    var attribHtml = `
+    <a href="https://github.com/qgis2web/qgis2web">qgis2web</a> &middot;
+    <a href="https://openlayers.org/">OpenLayers</a> &middot;
+    <a href="https://qgis.org/">QGIS</a>`;
+    if (layerAttrs.length > 0) { attribHtml += ' &nbsp;|&nbsp; ' + layerAttrs.join(', '); }
+    bottomAttributionUl.innerHTML = '<li>' + attribHtml + '</li>';
+  }
+});
 
 
 // Disable "popup on hover" or "highlight on hover" if ol-control mouseover
@@ -606,19 +606,17 @@ document.addEventListener('DOMContentLoaded', function() {
         topLeftContainerDiv.appendChild(zoomControl);
     }
     //geolocate
-    var geolocateControl = document.getElementsByClassName('geolocate')[0];
-    if (geolocateControl) {
+    if (typeof geolocateControl !== 'undefined') {
         topLeftContainerDiv.appendChild(geolocateControl);
     }
     //measure
-    var measureControl = document.getElementsByClassName('measure-control')[0];
-    if (measureControl) {
+    if (typeof measureControl !== 'undefined') {
         topLeftContainerDiv.appendChild(measureControl);
     }
     //geocoder
-    var geocoderControl = document.getElementsByClassName('ol-geocoder')[0];
-    if (geocoderControl) {
-        topLeftContainerDiv.appendChild(geocoderControl);
+    var searchbar = document.getElementsByClassName('photon-geocoder-autocomplete ol-unselectable ol-control')[0];
+    if (searchbar) {
+        topLeftContainerDiv.appendChild(searchbar);
     }
     //search layer
     var searchLayerControl = document.getElementsByClassName('search-layer')[0];

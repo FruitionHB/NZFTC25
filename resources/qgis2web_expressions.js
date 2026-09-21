@@ -179,8 +179,8 @@ function fnc_coalesce(values, context) {
 };
 
 function fnc_if(values, context) {
-    return false;
-};
+    return values[0] ? values[1] : values[2];
+}
 
 function fnc_aggregate(values, context) {
     return false;
@@ -385,19 +385,19 @@ function fnc_strpos(values, context) {
 };
 
 function fnc_left(values, context) {
-    return false;
+    return String(values[0]).substr(0, values[1]);
 };
 
 function fnc_right(values, context) {
-    return false;
+     return String(values[0]).substr(0, values[1]);
 };
 
 function fnc_rpad(values, context) {
-    return false;
+    return String(values[0]).padEnd(values[1], values[2]);
 };
 
 function fnc_lpad(values, context) {
-    return false;
+    return String(values[0]).padStart(values[1], values[2]);
 };
 
 function fnc_format(values, context) {
@@ -763,3 +763,69 @@ function fnc__specialcol_(values, context) {
 function fnc_project_color(values, context) {
     return false;
 };
+
+
+
+function exp_label_SunriseMagic_1_eval_expression(context) {
+    // Grower || '\n' || Block_name
+
+    var feature = context.feature;
+    
+    if (feature.properties) {
+        return ((feature.get('Grower')  + '\n') + feature.get('Block_name') );
+    } else {
+        return ((feature.get('Grower')  + '\n') + feature.get('Block_name') );
+    }
+}
+
+
+function exp_label_PiqaRed_2_eval_expression(context) {
+    // Grower || '\n' || Block_name
+
+    var feature = context.feature;
+    
+    if (feature.properties) {
+        return ((feature.get('Grower')  + '\n') + feature.get('Block_name') );
+    } else {
+        return ((feature.get('Grower')  + '\n') + feature.get('Block_name') );
+    }
+}
+
+
+function exp_label_Fizz_3_eval_expression(context) {
+    // Grower || '\n' || Block_name
+
+    var feature = context.feature;
+    
+    if (feature.properties) {
+        return ((feature.get('Grower')  + '\n') + feature.get('Block_name') );
+    } else {
+        return ((feature.get('Grower')  + '\n') + feature.get('Block_name') );
+    }
+}
+
+
+function exp_label_Eureka_4_eval_expression(context) {
+    // Grower || '\n' || Block_name
+
+    var feature = context.feature;
+    
+    if (feature.properties) {
+        return ((feature.get('Grower')  + '\n') + feature.get('Block_name') );
+    } else {
+        return ((feature.get('Grower')  + '\n') + feature.get('Block_name') );
+    }
+}
+
+
+function exp_label_CosmicCrisp_5_eval_expression(context) {
+    // Grower || '\n' || Block_name
+
+    var feature = context.feature;
+    
+    if (feature.properties) {
+        return ((feature.get('Grower')  + '\n') + feature.get('Block_name') );
+    } else {
+        return ((feature.get('Grower')  + '\n') + feature.get('Block_name') );
+    }
+}
