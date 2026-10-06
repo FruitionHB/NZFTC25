@@ -4,7 +4,7 @@ var map = new ol.Map({
     renderer: 'canvas',
     layers: layersList,
     view: new ol.View({
-        constrainResolution: true,
+        constrainResolution: false,
         maxZoom: 28,
         minZoom: 1,
         
@@ -12,7 +12,7 @@ var map = new ol.Map({
 });
 
 //initial view - epsg:3857 coordinates if not "Match project CRS"
-map.getView().fit([19678946.136147, -4815248.505662, 19701165.091628, -4801210.900643], map.getSize());
+map.getView().fit([19682141.769714, -4815520.727209, 19702844.560434, -4800482.584092], map.getSize());
 
 //change cursor
 function pointerOnFeature(evt) {
@@ -509,6 +509,44 @@ var Title = new ol.control.Control({
 map.addControl(Title)
     
 //abstract
+
+var Abstract = new ol.control.Control({
+    element: (() => {
+        var titleElement = document.createElement('div');
+        titleElement.className = 'top-left-abstract ol-control';
+        titleElement.id = 'abstract';
+
+        var linkElement = document.createElement('a');
+
+        if (15 > 240) {
+            linkElement.setAttribute("onmouseenter", "showAbstract()");
+            linkElement.setAttribute("onmouseleave", "hideAbstract()");
+            linkElement.innerHTML = 'i';
+
+            window.hideAbstract = function() {
+                linkElement.classList.add("project-abstract");
+                linkElement.classList.remove("project-abstract-uncollapsed");
+                linkElement.innerHTML = 'i';
+            }
+
+            window.showAbstract = function() {
+                linkElement.classList.remove("project-abstract");
+                linkElement.classList.add("project-abstract-uncollapsed");
+                linkElement.innerHTML = 'Updated 6-10-26';
+            }
+
+            hideAbstract();
+        } else {
+            linkElement.classList.add("project-abstract-uncollapsed");
+            linkElement.innerHTML = 'Updated 6-10-26';
+        }
+
+        titleElement.appendChild(linkElement);
+        return titleElement;
+    })(),
+    target: 'top-left-container'
+});
+map.addControl(Abstract);
 
 
 //geolocate
