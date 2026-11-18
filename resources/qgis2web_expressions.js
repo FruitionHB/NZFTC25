@@ -766,7 +766,7 @@ function fnc_project_color(values, context) {
 
 
 
-function exp_label_SunriseMagic_2_eval_expression(context) {
+function exp_label_SunriseMagic_1_eval_expression(context) {
     // Grower || '\n' || Block_name
 
     var feature = context.feature;
@@ -779,7 +779,7 @@ function exp_label_SunriseMagic_2_eval_expression(context) {
 }
 
 
-function exp_label_PiqaRed_3_eval_expression(context) {
+function exp_label_PiqaRed_2_eval_expression(context) {
     // Grower || '\n' || Block_name
 
     var feature = context.feature;
@@ -792,7 +792,7 @@ function exp_label_PiqaRed_3_eval_expression(context) {
 }
 
 
-function exp_label_Fizz_4_eval_expression(context) {
+function exp_label_Fizz_3_eval_expression(context) {
     // Grower || '\n' || Block_name
 
     var feature = context.feature;
@@ -805,7 +805,7 @@ function exp_label_Fizz_4_eval_expression(context) {
 }
 
 
-function exp_label_Eureka_5_eval_expression(context) {
+function exp_label_Eureka_4_eval_expression(context) {
     // Grower || '\n' || Block_name
 
     var feature = context.feature;
@@ -818,7 +818,7 @@ function exp_label_Eureka_5_eval_expression(context) {
 }
 
 
-function exp_label_CosmicCrisp_6_eval_expression(context) {
+function exp_label_CosmicCrisp_5_eval_expression(context) {
     // Grower || '\n' || Block_name
 
     var feature = context.feature;
